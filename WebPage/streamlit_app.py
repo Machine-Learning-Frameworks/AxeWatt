@@ -19,7 +19,7 @@ def coleta_dados_csv():
 
 @st.cache_data
 def coleta_localizacao():
-  localizacao = gpd.read_file('grandes_regioes_json.geojson')
+  localizacao = gpd.read_file('WebPage/grandes_regioes_json.geojson')
   return localizacao
   
 def filtra_dados(região,tempo_inicial,tempo_final):
