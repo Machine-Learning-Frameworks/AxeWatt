@@ -152,7 +152,7 @@ def cria_mapa(cores):
 def home():
     
   
-    st.sidebar.image('LOGO.png')
+    st.sidebar.image('WebPage/LOGO.png')
     
     opção_regiao = st.sidebar.selectbox('Escolha uma região',('Norte','Nordeste','Centro-sul','Sul')) 
   
