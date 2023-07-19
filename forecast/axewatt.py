@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from axewatt_tools import AxewattTools
-from pycaret.time_series import load_model, save_model
+from pycaret.time_series import load_model
 from pycaret.time_series import TSForecastingExperiment
 
 class Axewatt:
@@ -9,18 +9,21 @@ class Axewatt:
         self.tools = AxewattTools()
         self.tools.update_csv()
 
+        self.data = pd.read_csv("./data/CURVA_CARGA.csv")
+        self.data["Datetime"] = pd.to_datetime(self.data["Datetime"])
+        self.data.set_index("Datetime", inplace=True)
+        self.data = self.data.asfreq('h')
+
         self.regions = ['N', 'NE', 'S', 'SE']
-        self.models = []
-        self.data = None
     
     def get_model(self, region: str):
-        model = load_model(f"./models/ONSModel_{region}",
+        model = load_model(f"./forecast/models/ONSModel_{region}",
                            verbose=False)
         
         return model
     
-    def save(model, region: str):
-        save_model(model, f"./models/ONSModel_{region}")
+    def save(self, model, experiment: TSForecastingExperiment, region: str):
+        experiment.save_model(model, f"./forecast/models/ONSModel_{region}")
     
     def create_models(self):
         for region in self.regions:
@@ -30,7 +33,7 @@ class Axewatt:
                 new_data = self.tools.get_new_data(region)
 
                 updated_model = model.update(y=new_data, update_params=True)
-                self.models.append(updated_model)
+                self.save(model, region)
             except:
                 timeseries_experiment = TSForecastingExperiment()
 
@@ -41,30 +44,26 @@ class Axewatt:
 
                 timeseries_experiment.setup(data, target="mwh",
                                             fh=24, max_sp_to_consider=24,
-                                            session_id=991, verbose=False)
+                                            session_id=991, verbose=False,
+                                            n_jobs=1)
 
                 model = timeseries_experiment.create_model("arima",
                                                             verbose=False)
 
-                finalized_model = timeseries_experiment.finalize_model(model,
-                                                                       verbose=False)
+                finalized_model = timeseries_experiment.finalize_model(model)
 
-                self.models.append(finalized_model)
+                self.save(finalized_model, timeseries_experiment, region)
         
-        if len(self.models) == 4:
-            for index, region in enumerate(self.regions):
-                self.save(self.models[index], region)
-            
-            self.models = []
-        else:
+        if len(self.models) != 4:
             raise Exception("Error while creating models!")
 
     def update_data(self):
-        old_data = pd.read_csv("../data/CURVA_CARGA.csv")
-        new_data = pd.read_csv("../data/CURVA_CARGA_NOVO.csv")
+        old_data = pd.read_csv("./data/CURVA_CARGA.csv")
+        new_data = pd.read_csv("./data/CURVA_CARGA_NOVO.csv")
 
         data = pd.concat([old_data, new_data])
         data["Datetime"] = pd.to_datetime(data["Datetime"])
+        data.drop_duplicates(subset=["Datetime"], inplace=True)
         data.set_index("Datetime", inplace=True)
         data = data.asfreq('h')
 
@@ -74,40 +73,44 @@ class Axewatt:
         data.MWh_SE = self.tools.fill_seasonal_hourly_missing_values(data.MWh_SE.values)
 
         self.data = data
-        self.data.to_csv("../data/CURVA_CARGA.csv")
+        self.data.to_csv("./data/CURVA_CARGA.csv")
 
     def predict_data(self): 
         predictions = None
 
-        for index, model in enumerate(self.models):
+        for index, region in enumerate(self.regions):
+            model = self.get_model(region)
+
             start_date = pd.date_range(start=self.data.index[-1], 
-                                       periods=2, freq='h')
+                                       periods=25, freq='h')
+            
+            dates = start_date[1:]
 
             data = pd.DataFrame(data={"mwh": np.zeros(24)},
-                                index=pd.date_range(start=start_date[-1],
-                                                    periods=24, freq='h'))
+                                index=dates)
             
-            data = self.tools.creature_features(data)
-            data.drop(columns=["mwh"], inplace=True)
+            exogenous_data = self.tools.create_features(data)
+            exogenous_data.drop(columns=["mwh"], inplace=True)
+            exogenous_data.index = exogenous_data.index.to_period('h')
+            
+            period = np.arange(1, 25)
 
-            prediction = model.predict(fh=np.arange(1, 25),
-                                       X=data)
+            prediction = model.predict(fh=period,
+                                       X=exogenous_data)
 
-            if predictions == None:
-                prediction = pd.DataFrame(prediction, index=np.arange(len(prediction)))
-                prediction["Datetime"] = pd.date_range(start=start_date[-1],
-                                                    periods=len(prediction), freq='h')
-
-                prediction.set_index("Datetime", inplace=True)
-                predictions = pd.DataFrame(data={f"MWh_{self.regions[index]}": prediction.mwh.values},
-                                        index=prediction.index)
+            if index == 0:
+                predictions = pd.DataFrame(prediction, index=prediction.index)
+                predictions.rename(columns={"mwh": f"MWh_{region}"}, inplace=True)
+                predictions = predictions.round(3)
+                predictions.index.name = "Datetime"
             else:
-                prediction[f"MWh_{self.regions[index]}"] = prediction.values
+                predictions[f"MWh_{region}"] = np.round(prediction.values, 3)
 
-        predictions.to_csv("../data/CURVA_CARGA_FORECAST.csv")
+        data = pd.concat([self.data, predictions])
+        data.to_csv("./data/CURVA_CARGA_FORECAST.csv")
 
 if __name__ == "__main__":
     axewatt = Axewatt()
-    axewatt.create_models()
-    axewatt.update_data()
+    # axewatt.create_models()
+    # axewatt.update_data()
     axewatt.predict_data()

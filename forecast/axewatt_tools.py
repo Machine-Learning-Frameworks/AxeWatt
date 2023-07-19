@@ -25,21 +25,21 @@ class AxewattTools:
         def get_all_data(df: pd.DataFrame):
             all_data = None
 
-            for region in ['N', 'NE', 'S', 'SE']:
+            for index, region in enumerate(['N', 'NE', 'S', 'SE']):
                 dfR = df[df["ID_Subsys"] == f'{region}']
                 dfR.drop(columns=["ID_Subsys"], inplace=True)
                 dfR["MWh"] = dfR['MWh'].astype(float)
                 dfR = dfR.round(decimals=3)
                 dfR = dfR.rename(columns={"MWh": f"MWh_{region}"})
                 dfR = dfR.asfreq('h')
-                dfR[f"MWh_{region}"] = self.fill_seasonal_hourly_missing_values(dfR[f"MW_{region}"].values)
+                dfR[f"MWh_{region}"] = self.fill_seasonal_hourly_missing_values(dfR[f"MWh_{region}"].values)
 
-                if all_data == None:
+                if index == 0:
                     all_data = dfR
                 else:
                     all_data[f"MWh_{region}"] = dfR[f"MWh_{region}"]
 
-            return df
+            return all_data
         
         if self.response.status_code == 200:
             content = self.response.content.decode('utf-8')
@@ -54,11 +54,11 @@ class AxewattTools:
         df.set_index(["Datetime"], inplace=True)
 
         data = get_all_data(df)
-        old_data = pd.read_csv("../data/CURVA_CARGA.csv")
+        old_data = pd.read_csv("./data/CURVA_CARGA.csv")
         old_data["Datetime"] = pd.to_datetime(old_data["Datetime"])
 
         new_data = data.drop(data.loc[data.index <= old_data.iloc[-1]["Datetime"]].index)
-        new_data.to_csv("../data/CURVA_CARGA_NOVO.csv")
+        new_data.to_csv("./data/CURVA_CARGA_NOVO.csv")
 
     def create_features(self, df) -> pd.DataFrame:
         df["date"] = df.index
@@ -100,6 +100,7 @@ class AxewattTools:
     def get_new_data(self, region: str) -> pd.DataFrame:
         df = pd.read_csv("../data/CURVA_CARGA_NOVO.csv")
         df["Datetime"] = pd.to_datetime(df["Datetime"])
+        df.drop_duplicates(subset=["Datetime"], inplace=True)
         df.set_index("Datetime", inplace=True)
         df = df.asfreq('h')
 

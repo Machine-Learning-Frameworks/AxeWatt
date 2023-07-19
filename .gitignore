@@ -1,2 +1,7 @@
 *.log
 /Dependences
+/forecast/models
+*.ipynb
+/notebook_experiments
+*.ipynb_checkpoints
+/forecast/__pycache__
