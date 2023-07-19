@@ -12,7 +12,8 @@ st.set_page_config(page_title='Forecasting',layout='wide')
 pagina = st.empty()
 @st.cache_data
 def coleta_dados_csv():
-  dados=pd.read_csv('DadosFiltrados.csv')
+  dados=pd.read_csv('data/CURVA_CARGA_FORECAST.csv')
+  dados.rename(columns={'MWh_N':' Norte','MWh_NE':'Nordeste','MWh_S':'Sul','MWh_SE':'Centro-sul'},inplace=True)
   return dados
 
 
