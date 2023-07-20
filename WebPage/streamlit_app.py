@@ -169,9 +169,10 @@ def coleta_dados_previsao_real():
 
 
 
-def cria_gráfico_previsão_real():
-
-  nearest = alt.selection_point(nearest=True, on='mouseover',
+def cria_gráfico_previsão_real(região):
+  dados = coleta_dados_previsao_real()[[região+'_Previsto',região+'_Real']]
+  
+  pontos = alt.selection_point(nearest=True, on='mouseover',
                         fields=['x'], empty=False)
 
 
@@ -206,7 +207,7 @@ def cria_gráfico_previsão_real():
     )
 
   alt.layer(
-    line, selectors, points, rules, text
+    line, selectors, pontos, rules, text
     ).properties(
       width=600, height=300
     )
