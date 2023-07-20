@@ -106,6 +106,7 @@ class Axewatt:
             else:
                 predictions[f"MWh_{region}"] = np.round(prediction.values, 3)
 
+        predictions.index = pd.to_datetime(predictions.index)
         data = pd.concat([self.data, predictions])
         data.to_csv("./data/CURVA_CARGA_FORECAST.csv")
 
