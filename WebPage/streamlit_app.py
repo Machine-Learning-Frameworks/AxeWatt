@@ -261,7 +261,6 @@ def home():
     
 
 
-    st.write(coleta_dados_previsao_real())
 
 
 home()
