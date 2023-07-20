@@ -153,7 +153,18 @@ def cria_mapa(cores):
 
 @st.cache_data
 def coleta_dados_previsao_real():
-  
+  dados_previsao = pd.read_csv('data/CURVA_CARGA.csv')
+  dados_previsao.set_index('Datetime',inplace=True)
+  dados_previsao.rename(columns={"MWh_N": "Norte_Previsto", "MWh_NE": "Nordeste_Previsto","MWh_S":"Sul_Previsto","MWh_SE":"Centro-sul_Previsto"},inplace=True)
+
+  dados_real = pd.read_csv('data/CURVA_CARGA_FORECAST.csv').iloc[-24:]
+  dados_real.set_index('Datetime',inplace=True)
+  dados_real.rename(columns={"MWh_N": "Norte_Real", "MWh_NE": "Nordeste_Real","MWh_S":"Sul_Real","MWh_SE":"Centro-sul_Real"},inplace=True)
+  dados_real.drop(columns=['Unnamed: 0'],inplace=True)
+
+  dados = pd.concat([dados_previsao,dados_real],axis=1).reindex(dados_previsao.index)
+  return dados 
+
 
 
 
