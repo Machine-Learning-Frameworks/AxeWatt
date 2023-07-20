@@ -148,8 +148,59 @@ def cria_mapa(cores):
         )
     st.subheader("Região Selecionada")
     st_mapa=st_folium(mapa,width=1000, height=450) 
-   
-       
+
+
+
+@st.cache_data
+def coleta_dados_previsao_real():
+  
+
+
+
+
+def cria_gráfico_previsão_real():
+
+  nearest = alt.selection_point(nearest=True, on='mouseover',
+                        fields=['x'], empty=False)
+
+
+  line = alt.Chart(source).mark_line(interpolate='basis').encode(
+      x='x:Q',
+      y='y:Q',
+      color='category:N'
+      )
+
+  selectors = alt.Chart(source).mark_point().encode(
+      x='x:Q',
+      opacity=alt.value(0),
+      ).add_params(
+      nearest
+        )
+
+
+  points = line.mark_point().encode(
+    opacity=alt.condition(nearest, alt.value(1), alt.value(0))
+        )
+
+
+  text = line.mark_text(align='left', dx=5, dy=-5).encode(
+    text=alt.condition(nearest, 'y:Q', alt.value(' '))
+    )
+
+
+  rules = alt.Chart(source).mark_rule(color='gray').encode(
+      x='x:Q',
+    ).transform_filter(
+      nearest
+    )
+
+  alt.layer(
+    line, selectors, points, rules, text
+    ).properties(
+      width=600, height=300
+    )
+
+
 def home():
     
   
