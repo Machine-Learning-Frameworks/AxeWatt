@@ -153,7 +153,7 @@ def cria_mapa(cores):
 
 @st.cache_data
 def coleta_dados_previsao_real():
-  dados_previsao = pd.read_csv('data/CURVA_CARGA.csv')
+  dados_previsao = pd.read_csv('data/CURVA_CARGA_NOVO.csv')
   dados_previsao.set_index('Datetime',inplace=True)
   dados_previsao.rename(columns={"MWh_N": "Norte_Previsto", "MWh_NE": "Nordeste_Previsto","MWh_S":"Sul_Previsto","MWh_SE":"Centro-sul_Previsto"},inplace=True)
 
