@@ -9,11 +9,12 @@ import altair as alt
 import streamlit_javascript as st_js
 
 
-tamanho_da_tela= st_js.st_javascript("window.innerWidth")
+
 
 
 st.set_page_config(page_title='Forecasting',layout='wide')
 
+tamanho_da_tela= st_js.st_javascript("window.innerWidth")
 pagina = st.empty()
 @st.cache_data
 def coleta_dados_csv():
