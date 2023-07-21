@@ -6,6 +6,11 @@ from streamlit_folium import folium_static
 import datetime
 import geopandas as gpd
 import altair as alt
+import streamlit_javascript as st_js
+
+
+tamanho_da_tela= st_js.st_javascript("window.innerWidth")
+
 
 st.set_page_config(page_title='Forecasting',layout='wide')
 
@@ -147,7 +152,7 @@ def cria_mapa(cores):
           folium.features.GeoJsonTooltip(['NOME2','MHW'],labels=False)
         )
     st.subheader("Região Selecionada")
-    st_mapa=st_folium(mapa,width=1000, height=450) 
+    st_mapa=st_folium(mapa,width=(tamanho_da_tela*0.9), height=450) 
 
 
 
