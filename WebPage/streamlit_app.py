@@ -224,7 +224,9 @@ def home():
   
     st.sidebar.image('WebPage/LOGO.png')
     
-    opção_regiao = st.sidebar.selectbox('Escolha o ano inicial',(coleta_dados_csv()['Datetime']))
+    ano_inicial = st.sidebar.selectbox('Escolha o ano inicial',(coleta_dados_csv()['Datetime']))
+
+    ano_final = st.sidebar.selectbox('Escolha o ano inicial',(coleta_dados_csv()['Datetime']))
   
     col1, col2, col3 = st.columns(3)
     
