@@ -74,6 +74,7 @@ def cria_mapa(regiões):
 
     dados=regiões.to_frame()
     dados['index']=[0,1,2,3]
+    dados['regiões']=regiões.index()
     dados.set_index('index',inplace=True)
     st.write(dados)
     carga_estados=pd.DataFrame(carga_estados)
