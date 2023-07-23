@@ -85,7 +85,7 @@ def cria_mapa(regiões):
     cloropleth = folium.Choropleth(
         geo_data=coleta_localizacao(),
         data=dados,
-        columns=['Estados','cores'],
+        columns=['Estados','Carga'],
         key_on='feature.properties.NOME2',
         fill_color='Spectral'
         )
