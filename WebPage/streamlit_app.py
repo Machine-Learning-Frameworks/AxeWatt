@@ -229,16 +229,17 @@ def home():
     ano_final = st.sidebar.selectbox('Escolha o ano final',(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()['Datetime'][coleta_dados_csv()['Datetime']==ano_inicial].index[0]+1:]))
   
     col1, col2, col3 = st.columns(3)
-    
-    col1.metric(label = "Região com maior aumento percentual:", value = "Norte",
+  
+    st.subheader("Regiões com o maior aumento percentual de consumo: ")
+    col1.metric(label = "", value = "Norte",
                delta = f"{20}%",
-               help = f"Valor do consumo de energia previsto para ás {pd.to_datetime(coleta_dados_csv()['Datetime'].iloc[-1]).strftime('%H:%M na data %d/%m/%y')}" )
-    col2.metric(label = "Região com o segundo maior aumento percentual: " ,value='Centro-sul',
+               help = f"" )
+    col2.metric(label = "" ,value='Centro-sul',
                delta = f"{12}%",
-               help = f"Valor do consumo de energia ás {pd.to_datetime(coleta_dados_csv()['Datetime'].iloc[-2]).strftime('%H:%M na data %d/%m/%y')}")
-    col3.metric(label  ="Região com o terceiro maior aumento percentual: ",value='Sul',
+               help = f"")
+    col3.metric(label  ="",value='Sul',
                delta = f"{5}%",
-               help = f"Valor do consumo de energia ás {pd.to_datetime(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()[opção_regiao].iloc[-24:-1].idxmax()]).strftime('%H:%M na data %d/%m/%y')}")
+               help = f"")
 
 
     if opção_regiao == 'Centro-sul':
