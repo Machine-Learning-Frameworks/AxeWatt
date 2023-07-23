@@ -77,7 +77,6 @@ def cria_mapa(regiões):
     dados['Estados'] = regiões.index
     dados.set_index('index',inplace=True)
     dados.rename(columns={0:'Carga'},inplace = True)
-    st.write(dados)
     mapa = folium.Map(location=[-14.235,-54.2],zoom_start=4,
                     max_zoom=4,min_zoom=4,tiles='CartoDB positron',dragging=False,prefer_canvas=True)
   
@@ -144,7 +143,6 @@ def home():
                delta = f"{(regiões.iloc[3])}%",
                help = f"")
 
-    st.write(regiões)
     cria_mapa(regiões)
     
     
