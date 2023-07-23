@@ -244,7 +244,7 @@ def home():
                delta = f"{5}%",
                help = f"")
     col4.metric(label  ="",value='Nordeste',
-               delta = f"{11}%",
+               delta = f"{-11}%",
                help = f"")
 
     if opção_regiao == 'Centro-sul':
