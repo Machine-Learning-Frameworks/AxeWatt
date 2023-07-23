@@ -231,7 +231,7 @@ def home():
     col1, col2, col3 = st.columns(3)
   
     st.subheader("Regiões com o maior aumento percentual de consumo: ")
-    col1.metric(label = "", value = "Norte",
+    col1.metric(label = "Regiões com o maior aumento percentual de consumo:", value = "Norte",
                delta = f"{20}%",
                help = f"" )
     col2.metric(label = "" ,value='Centro-sul',
