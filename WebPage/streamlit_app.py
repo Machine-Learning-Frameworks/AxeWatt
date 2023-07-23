@@ -198,16 +198,16 @@ def home():
     col1, col2, col3, col4 = st.columns(4)
   
     
-    col1.metric(label = "", value = "Norte" ,
+    col1.metric(label = "", value = coleta_dados_csv().index[0] ,
                delta = f"{20}%",
                help = f"" )
-    col2.metric(label = "" ,value='Centro-sul',
+    col2.metric(label = "" ,value= coleta_dados_csv().index[1],
                delta = f"{12}%",
                help = f"")
-    col3.metric(label  ="",value='Sul',
+    col3.metric(label  ="",value= coleta_dados_csv().index[2],
                delta = f"{5}%",
                help = f"")
-    col4.metric(label  ="",value='Nordeste',
+    col4.metric(label  ="",value=coleta_dados_csv().index[3],
                delta = f"{-11}%",
                help = f"")
 
