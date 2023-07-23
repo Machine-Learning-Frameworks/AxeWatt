@@ -136,19 +136,19 @@ def home():
   
     regiões = ordena_regiões(ano_inicial,ano_final) 
     col1.metric(label = "", value = regiões.index[0] ,
-               delta = f"{20}%",
+               delta = f"{regiões.iloc[0]}%",
                help = f"" )
     col2.metric(label = "" ,value = regiões.index[1],
-               delta = f"{12}%",
+               delta = f"{regiões.iloc[1]}%",
                help = f"")
     col3.metric(label  ="",value = regiões.index[2],
-               delta = f"{5}%",
+               delta = f"{regiões.iloc[2]}%",
                help = f"")
     col4.metric(label  ="",value = regiões.index[3],
-               delta = f"{-11}%",
+               delta = f"{regiões.iloc[3]}%",
                help = f"")
 
-  
+    st.write(regiões)
 
     
     
