@@ -230,8 +230,8 @@ def home():
   
     col1, col2, col3 = st.columns(3)
     
-    col1.metric(label = "Consumo na próxima hora: ", value = f"{coleta_dados_csv()[opção_regiao].iloc[-1]} MWh",
-               delta = f"{(coleta_dados_csv()[opção_regiao].iloc[-1] - coleta_dados_csv()[opção_regiao].iloc[-2]).round()} MWh",
+    col1.metric(label = "Consumo na próxima hora: ", value = "Norte",
+               delta = f"{10}%",
                help = f"Valor do consumo de energia previsto para ás {pd.to_datetime(coleta_dados_csv()['Datetime'].iloc[-1]).strftime('%H:%M na data %d/%m/%y')}" )
     col2.metric(label = "Consumo na última hora: ",value = f"{coleta_dados_csv()[opção_regiao].iloc[-2]} MWh" ,
                delta = f"{(coleta_dados_csv()[opção_regiao].iloc[-2] - coleta_dados_csv()[opção_regiao].iloc[-3]).round()} MWh",
