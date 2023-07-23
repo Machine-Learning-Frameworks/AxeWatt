@@ -14,6 +14,7 @@ st.set_page_config(page_title='Forecasting',layout='wide')
 
 
 pagina = st.empty()
+
 @st.cache_data
 def coleta_dados_csv():
   dados=pd.read_csv('data/CURVA_CARGA_FORECAST.csv')
@@ -69,7 +70,6 @@ def cria_grafico_consumo(dados):
 
 
   
-@st.cache_data(experimental_allow_widgets=True)
 def cria_mapa(cores):
 
     dados=coleta_dados_csv()
@@ -111,10 +111,10 @@ def ordena_regiões(ano_inicial,ano_final):
   dados = coleta_dados_csv()
   inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
   fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
-  percentuais_aumento = [(dados['Norte'].iloc[fim]-dados['Norte'].iloc[inicio])/dados['Norte'].iloc[inicio],
-                         (dados['Sul'].iloc[fim]-dados['Sul'].iloc[inicio])/dados['Sul'].iloc[inicio],
-                         (dados['Nordeste'].iloc[fim]-dados['Nordeste'].iloc[inicio])/dados['Nordeste'].iloc[inicio],
-                         (dados['Centro-sul'].iloc[fim]-dados['Centro-sul'].iloc[inicio])/dados['Centro-sul'].iloc[inicio]
+  percentuais_aumento = [((dados['Norte'].iloc[fim]-dados['Norte'].iloc[inicio])/dados['Norte'].iloc[inicio])*100,
+                         ((dados['Sul'].iloc[fim]-dados['Sul'].iloc[inicio])/dados['Sul'].iloc[inicio])*100,
+                         ((dados['Nordeste'].iloc[fim]-dados['Nordeste'].iloc[inicio])/dados['Nordeste'].iloc[inicio])*100,
+                         ((dados['Centro-sul'].iloc[fim]-dados['Centro-sul'].iloc[inicio])/dados['Centro-sul'].iloc[inicio])*100
                         ]
   return pd.Series(data = percentuais_aumento, index =['Norte','Sul','Nordeste','Centro-sul']).sort_values(ascending=False)
 
@@ -136,16 +136,16 @@ def home():
   
     regiões = ordena_regiões(ano_inicial,ano_final) 
     col1.metric(label = "", value = regiões.index[0] ,
-               delta = f"{(regiões.iloc[0]*100).round()}%",
+               delta = f"{(regiões.iloc[0])}%",
                help = f"" )
     col2.metric(label = "" ,value = regiões.index[1],
-               delta = f"{(regiões.iloc[1]*100).round()}%",
+               delta = f"{(regiões.iloc[1])}%",
                help = f"")
     col3.metric(label  ="",value = regiões.index[2],
-               delta = f"{(regiões.iloc[2]*100).round()}%",
+               delta = f"{(regiões.iloc[2])}%",
                help = f"")
     col4.metric(label  ="",value = regiões.index[3],
-               delta = f"{(regiões.iloc[3]*100).round()}%",
+               delta = f"{(regiões.iloc[3])}%",
                help = f"")
 
     st.write(regiões)
