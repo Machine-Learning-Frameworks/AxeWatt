@@ -70,16 +70,12 @@ def cria_grafico_consumo(dados):
 
 
   
-def cria_mapa(cores):
+def cria_mapa():
 
-    dados=coleta_dados_csv()
-    carga_estados={'Estados':[],
-               'Mhw':[]}
-    estados=['Nordeste','Norte','Sul','Centro-sul']
-    for i in estados:
-      carga_estados['Estados'].append(i)
-      carga_estados['Mhw'].append(dados[i].iloc[-24::].sum().round())
-
+    dados=coleta_dados_csv().to_frame()
+    dados['index']=[0,1,2,3]
+    dados.set_index('index',inplace=True)
+    st.write(dados)
     carga_estados=pd.DataFrame(carga_estados)
     mapa = folium.Map(location=[-14.235,-54.2],zoom_start=4,
                     max_zoom=4,min_zoom=4,tiles='CartoDB positron',dragging=False,prefer_canvas=True)
@@ -111,10 +107,10 @@ def ordena_regiões(ano_inicial,ano_final):
   dados = coleta_dados_csv()
   inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
   fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
-  percentuais_aumento = [((dados['Norte'].iloc[fim]-dados['Norte'].iloc[inicio])/dados['Norte'].iloc[inicio])*100,
-                         ((dados['Sul'].iloc[fim]-dados['Sul'].iloc[inicio])/dados['Sul'].iloc[inicio])*100,
-                         ((dados['Nordeste'].iloc[fim]-dados['Nordeste'].iloc[inicio])/dados['Nordeste'].iloc[inicio])*100,
-                         ((dados['Centro-sul'].iloc[fim]-dados['Centro-sul'].iloc[inicio])/dados['Centro-sul'].iloc[inicio])*100
+  percentuais_aumento = [(((dados['Norte'].iloc[fim]-dados['Norte'].iloc[inicio])/dados['Norte'].iloc[inicio])*100).round(),
+                         (((dados['Sul'].iloc[fim]-dados['Sul'].iloc[inicio])/dados['Sul'].iloc[inicio])*100).round(),
+                         (((dados['Nordeste'].iloc[fim]-dados['Nordeste'].iloc[inicio])/dados['Nordeste'].iloc[inicio])*100).round(),
+                         (((dados['Centro-sul'].iloc[fim]-dados['Centro-sul'].iloc[inicio])/dados['Centro-sul'].iloc[inicio])*100).round()
                         ]
   return pd.Series(data = percentuais_aumento, index =['Norte','Sul','Nordeste','Centro-sul']).sort_values(ascending=False)
 
@@ -149,7 +145,7 @@ def home():
                help = f"")
 
     st.write(regiões)
-
+    cria_mapa()
     
     
     #st.altair_chart(cria_grafico_consumo(filtra_dados(opção_regiao,opção_tempo_inicial,opção_tempo_final)), theme="streamlit", use_container_width=True)
