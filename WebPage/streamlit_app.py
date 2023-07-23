@@ -226,12 +226,16 @@ def home():
     
     ano_inicial = st.sidebar.selectbox('Escolha o ano inicial',(coleta_dados_csv()['Datetime']))
 
+    
     ano_final = st.sidebar.selectbox('Escolha o ano final',(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()['Datetime'][coleta_dados_csv()['Datetime']==ano_inicial].index[0]+1:]))
+
+    st.subheader("Regiões com o maior aumento percentual de consumo: ")
+
   
     col1, col2, col3 = st.columns(3)
   
-    st.subheader("Regiões com o maior aumento percentual de consumo: ")
-    col1.metric(label = "Regiões com o maior aumento percentual de consumo:", value = "Norte",
+    
+    col1.metric(label = "", value = "Norte",
                delta = f"{20}%",
                help = f"" )
     col2.metric(label = "" ,value='Centro-sul',
