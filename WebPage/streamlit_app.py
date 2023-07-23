@@ -70,9 +70,9 @@ def cria_grafico_consumo(dados):
 
 
   
-def cria_mapa():
+def cria_mapa(regiões):
 
-    dados=ordena_regiões(ano_inicial,ano_final).to_frame()
+    dados=regiões.to_frame()
     dados['index']=[0,1,2,3]
     dados.set_index('index',inplace=True)
     st.write(dados)
@@ -145,7 +145,7 @@ def home():
                help = f"")
 
     st.write(regiões)
-    cria_mapa()
+    cria_mapa(regiões)
     
     
     #st.altair_chart(cria_grafico_consumo(filtra_dados(opção_regiao,opção_tempo_inicial,opção_tempo_final)), theme="streamlit", use_container_width=True)
