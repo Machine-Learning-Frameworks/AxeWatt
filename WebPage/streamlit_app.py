@@ -212,7 +212,7 @@ def home():
                help = f"")
 
   
-   st.write(ordena_regiões(ano_inicial,ano_final))
+    st.write(ordena_regiões(ano_inicial,ano_final))
     
     
     #st.altair_chart(cria_grafico_consumo(filtra_dados(opção_regiao,opção_tempo_inicial,opção_tempo_final)), theme="streamlit", use_container_width=True)
