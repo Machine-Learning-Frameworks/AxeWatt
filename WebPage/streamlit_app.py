@@ -6,8 +6,6 @@ from streamlit_folium import folium_static
 import datetime
 import geopandas as gpd
 import altair as alt
-import streamlit_javascript as st_js
-
 
 
 
@@ -172,51 +170,17 @@ def coleta_dados_previsao_real():
   return dados 
 
 
+def ordena_regiões(ano_inicial,ano_final):
+  dados = coleta_dados_csv()
+  inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
+  fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
+  percentuais_aumento = [(dados['Norte'].iloc[fim]-dados['Norte'].iloc[inicio])/dados['Norte'].iloc[inicio],
+                         (dados['Sul'].iloc[fim]-dados['Sul'].iloc[inicio])/dados['Sul'].iloc[inicio],
+                         (dados['Nordeste'].iloc[fim]-dados['Nordeste'].iloc[inicio])/dados['Nordeste'].iloc[inicio],
+                         (dados['Centro-sul'].iloc[fim]-dados['Centro-sul'].iloc[inicio])/dados['Centro-sul'].iloc[inicio]
+                        ]
+  return pd.Series(data = percentuais_aumento, index =['Norte','Sul','Nordeste','Centro-sul']).sort_values(ascending=False)
 
-
-
-def cria_gráfico_previsão_real(região):
-  dados = coleta_dados_previsao_real()[[região+'_Previsto',região+'_Real']]
-  
-  pontos = alt.selection_point(nearest=True, on='mouseover',
-                        fields=['x'], empty=False)
-
-
-  line = alt.Chart(source).mark_line(interpolate='basis').encode(
-      x='x:Q',
-      y='y:Q',
-      color='category:N'
-      )
-
-  selectors = alt.Chart(source).mark_point().encode(
-      x='x:Q',
-      opacity=alt.value(0),
-      ).add_params(
-      nearest
-        )
-
-
-  points = line.mark_point().encode(
-    opacity=alt.condition(nearest, alt.value(1), alt.value(0))
-        )
-
-
-  text = line.mark_text(align='left', dx=5, dy=-5).encode(
-    text=alt.condition(nearest, 'y:Q', alt.value(' '))
-    )
-
-
-  rules = alt.Chart(source).mark_rule(color='gray').encode(
-      x='x:Q',
-    ).transform_filter(
-      nearest
-    )
-
-  alt.layer(
-    line, selectors, pontos, rules, text
-    ).properties(
-      width=600, height=300
-    )
 
 
 def home():
@@ -247,31 +211,11 @@ def home():
                delta = f"{-11}%",
                help = f"")
 
-    if opção_regiao == 'Centro-sul':
-      cria_mapa([None,None,None,200])
-    if opção_regiao == 'Nordeste':
-      cria_mapa([200,None,None,None])
-    if opção_regiao == 'Norte':
-      cria_mapa([None,200,None,None])
-    if opção_regiao == 'Sul':
-      cria_mapa([None,None,200,None])
-    dados_tempo=coleta_dados_csv()
   
-    inicio=pd.to_datetime(dados_tempo['Datetime']).iloc[0]
-    fim=pd.to_datetime(dados_tempo['Datetime']).iloc[-1]
-    opção_tempo_inicial = st.sidebar.date_input('Escolha uma data inicial',fim,min_value=inicio,
-                                              max_value=fim,
-                                              )
+   st.write(ordena_regiões(ano_inicial,ano_final))
     
     
-  
-    opção_tempo_final = st.sidebar.date_input('Escolha uma data final',opção_tempo_inicial,min_value=opção_tempo_inicial,
-                                              max_value=fim,
-                                              )
-
-    
-    
-    st.altair_chart(cria_grafico_consumo(filtra_dados(opção_regiao,opção_tempo_inicial,opção_tempo_final)), theme="streamlit", use_container_width=True)
+    #st.altair_chart(cria_grafico_consumo(filtra_dados(opção_regiao,opção_tempo_inicial,opção_tempo_final)), theme="streamlit", use_container_width=True)
     
 
 
