@@ -197,22 +197,22 @@ def home():
   
     col1, col2, col3, col4 = st.columns(4)
   
-    
-    col1.metric(label = "", value = coleta_dados_csv().index[0] ,
+    regiões = ordena_regiões(ano_inicial,ano_final) 
+    col1.metric(label = "", value = regiões.index[0] ,
                delta = f"{20}%",
                help = f"" )
-    col2.metric(label = "" ,value= coleta_dados_csv().index[1],
+    col2.metric(label = "" ,value = regiões.index[1],
                delta = f"{12}%",
                help = f"")
-    col3.metric(label  ="",value= coleta_dados_csv().index[2],
+    col3.metric(label  ="",value = regiões.index[2],
                delta = f"{5}%",
                help = f"")
-    col4.metric(label  ="",value=coleta_dados_csv().index[3],
+    col4.metric(label  ="",value = regiões.index[3],
                delta = f"{-11}%",
                help = f"")
 
   
-    st.write(ordena_regiões(ano_inicial,ano_final))
+
     
     
     #st.altair_chart(cria_grafico_consumo(filtra_dados(opção_regiao,opção_tempo_inicial,opção_tempo_final)), theme="streamlit", use_container_width=True)
