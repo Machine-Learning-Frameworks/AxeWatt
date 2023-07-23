@@ -235,7 +235,7 @@ def home():
   
     
     col1.metric(label = "", value = "Norte" ,
-               delta = f"{20}%"",
+               delta = f"{20}%",
                help = f"" )
     col2.metric(label = "" ,value='Centro-sul',
                delta = f"{12}%",
