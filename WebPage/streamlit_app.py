@@ -12,7 +12,7 @@ import altair as alt
 
 st.set_page_config(page_title='Forecasting',layout='wide')
 
-tamanho_da_tela= st_js.st_javascript("window.innerWidth")
+
 pagina = st.empty()
 @st.cache_data
 def coleta_dados_csv():
