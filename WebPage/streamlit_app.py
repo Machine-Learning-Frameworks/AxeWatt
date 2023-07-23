@@ -26,50 +26,8 @@ def coleta_localizacao():
   localizacao = gpd.read_file('WebPage/grandes_regioes_json.geojson')
   return localizacao
   
-def filtra_dados(região,tempo_inicial,tempo_final):
-  escala_do_dia = pd.date_range(start=tempo_inicial, end=tempo_final)
-  tempo_inicial=datetime.datetime(tempo_inicial.year,tempo_inicial.month,tempo_inicial.day,0,0,0)
-  tempo_final=datetime.datetime(tempo_final.year,tempo_final.month,tempo_final.day,23,0,0)
-  data_frame=coleta_dados_csv()[[região,'Datetime']]
-  data_frame['Datetime']=pd.to_datetime(data_frame['Datetime'])
 
-  if tempo_inicial.year != tempo_final.year:
-    filtrados=data_frame.loc[(data_frame['Datetime']>=tempo_inicial)&(data_frame['Datetime']<=tempo_final)]
-    filtrados['Datetime'] = pd.DatetimeIndex(filtrados['Datetime'])
-    filtrados.set_index('Datetime',inplace=True)
-    filtrados = filtrados.resample('Y').sum()
-    filtrados.reset_index(inplace=True)
-    ano = filtrados['Datetime'].dt.strftime("%Y")
-    filtrados['Datetime']= ano
-    filtrados.rename(columns={região:'Mhw','Datetime':'Tempo'},inplace=True)
-    return filtrados
-    
-  elif tempo_inicial.month != tempo_final.month and len(escala_do_dia) > 90 :
-    filtrados=data_frame.loc[(data_frame['Datetime']>=tempo_inicial)&(data_frame['Datetime']<=tempo_final)]
-    filtrados['Datetime'] = pd.DatetimeIndex(filtrados['Datetime'])
-    filtrados.set_index('Datetime',inplace=True)
-    filtrados = filtrados.resample('M').sum()
-    filtrados.reset_index(inplace=True)
-    mes = filtrados['Datetime'].dt.strftime("%m")
-    filtrados['Datetime']=mes
-    filtrados.rename(columns={região:'Mhw','Datetime':'Tempo'},inplace=True)
-    return filtrados
-    
-  elif tempo_inicial.day != tempo_final.day : 
-    filtrados=data_frame.loc[(data_frame['Datetime']>=tempo_inicial)&(data_frame['Datetime']<=tempo_final)]
-    filtrados['Datetime'] = pd.DatetimeIndex(filtrados['Datetime'])
-    filtrados.set_index('Datetime',inplace=True)
-    filtrados= filtrados.resample('D').sum()
-    filtrados.reset_index(inplace=True)
-    filtrados['Datetime']=filtrados['Datetime'].dt.strftime("%m/%d")
-    filtrados.rename(columns={região:'Mhw','Datetime':'Tempo'},inplace=True)
-    return filtrados
-  
-  else:
-    filtrados=data_frame.loc[(data_frame['Datetime']>=tempo_inicial)&(data_frame['Datetime']<=tempo_final)]
-    filtrados['Datetime']= filtrados['Datetime'].copy().dt.strftime("%H:%M")
-    filtrados.rename(columns={região:'Mhw','Datetime':'Tempo'},inplace=True)
-    return filtrados
+
     
 def cria_grafico_consumo(dados):
   grafico=alt.Chart(dados).mark_area(color = 'orange',
@@ -110,13 +68,6 @@ def cria_grafico_consumo(dados):
   return grafico_real
 
 
-def filtra_dados_comparação(região):
- dados = coleta_dados_csv()[[região,'Datetime']]
- tempo = pd.DatetimeIndex(dados['Datetime'].iloc[-24:]).strftime("%H:%M")
- dados_grafico = [dados[região].iloc[-24:].values,dados[região].iloc[-48:-24].values]
- dic = {'real':dados_grafico[0],'previsto':dados_grafico[1]}
- return pd.DataFrame(index=tempo, data=dic)
-
   
 @st.cache_data(experimental_allow_widgets=True)
 def cria_mapa(cores):
@@ -154,20 +105,6 @@ def cria_mapa(cores):
     st_mapa=st_folium(mapa,width=1000 , height=450) 
 
 
-
-@st.cache_data
-def coleta_dados_previsao_real():
-  dados_previsao = pd.read_csv('data/CURVA_CARGA_NOVO.csv')
-  dados_previsao.set_index('Datetime',inplace=True)
-  dados_previsao.rename(columns={"MWh_N": "Norte_Previsto", "MWh_NE": "Nordeste_Previsto","MWh_S":"Sul_Previsto","MWh_SE":"Centro-sul_Previsto"},inplace=True)
-
-  dados_real = pd.read_csv('data/CURVA_CARGA_FORECAST.csv').iloc[-24:]
-  dados_real.set_index('Datetime',inplace=True)
-  dados_real.rename(columns={"MWh_N": "Norte_Real", "MWh_NE": "Nordeste_Real","MWh_S":"Sul_Real","MWh_SE":"Centro-sul_Real"},inplace=True)
-  dados_real.drop(columns=['Unnamed: 0'],inplace=True)
-
-  dados = pd.concat([dados_previsao,dados_real],axis=1).reindex(dados_previsao.index)
-  return dados 
 
 
 def ordena_regiões(ano_inicial,ano_final):
