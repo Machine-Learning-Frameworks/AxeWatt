@@ -76,7 +76,7 @@ def cria_mapa(regiões):
     dados['index'] = [0,1,2,3]
     dados['regiões'] = regiões.index
     dados.set_index('index',inplace=True)
-    dados.rename(columns={'0':'Estados'},inplace = True)
+    dados.rename(columns={0:'Carga'},inplace = True)
     st.write(dados)
     carga_estados=pd.DataFrame(carga_estados)
     mapa = folium.Map(location=[-14.235,-54.2],zoom_start=4,
