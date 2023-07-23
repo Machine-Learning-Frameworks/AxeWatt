@@ -230,14 +230,14 @@ def home():
   
     col1, col2, col3 = st.columns(3)
     
-    col1.metric(label = "Consumo na próxima hora: ", value = "Norte",
-               delta = f"{10}%",
+    col1.metric(label = "Região com maior aumento percentual:", value = "Norte",
+               delta = f"{20}%",
                help = f"Valor do consumo de energia previsto para ás {pd.to_datetime(coleta_dados_csv()['Datetime'].iloc[-1]).strftime('%H:%M na data %d/%m/%y')}" )
-    col2.metric(label = "Consumo na última hora: ",value = f"{coleta_dados_csv()[opção_regiao].iloc[-2]} MWh" ,
-               delta = f"{(coleta_dados_csv()[opção_regiao].iloc[-2] - coleta_dados_csv()[opção_regiao].iloc[-3]).round()} MWh",
+    col2.metric(label = "Região com o segundo maior aumento percentual: " ,value='Centro-sul',
+               delta = f"{12}%",
                help = f"Valor do consumo de energia ás {pd.to_datetime(coleta_dados_csv()['Datetime'].iloc[-2]).strftime('%H:%M na data %d/%m/%y')}")
-    col3.metric(label  ="Pico de consumo nas últimas 24 horas: ", value=f"{coleta_dados_csv()[opção_regiao].iloc[-24:-1].max()} MWh", 
-               delta = f"{(coleta_dados_csv()[opção_regiao].iloc[-48:-24].max() - coleta_dados_csv()[opção_regiao].iloc[-24:-1].max()).round()} MWh",
+    col3.metric(label  ="Região com o terceiro maior aumento percentual: ",value='Sul',
+               delta = f"{5}%",
                help = f"Valor do consumo de energia ás {pd.to_datetime(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()[opção_regiao].iloc[-24:-1].idxmax()]).strftime('%H:%M na data %d/%m/%y')}")
 
 
