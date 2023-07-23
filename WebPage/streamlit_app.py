@@ -74,32 +74,30 @@ def cria_mapa(regiões):
 
     dados=regiões.to_frame()
     dados['index'] = [0,1,2,3]
-    dados['regiões'] = regiões.index
+    dados['Estados'] = regiões.index
     dados.set_index('index',inplace=True)
     dados.rename(columns={0:'Carga'},inplace = True)
     st.write(dados)
-    carga_estados=pd.DataFrame(carga_estados)
     mapa = folium.Map(location=[-14.235,-54.2],zoom_start=4,
                     max_zoom=4,min_zoom=4,tiles='CartoDB positron',dragging=False,prefer_canvas=True)
   
-    carga_estados['cores']=cores
           
     cloropleth = folium.Choropleth(
         geo_data=coleta_localizacao(),
-        data=carga_estados,
+        data=dados,
         columns=['Estados','cores'],
         key_on='feature.properties.NOME2',
         fill_color='Spectral'
         )
-    carga_estados.set_index('Estados',inplace=True)
+    dados.set_index('Estados',inplace=True)
     cloropleth.geojson.add_to(mapa)
     for features in cloropleth.geojson.data['features']:
-        features['properties']['MHW'] = "Consumo nas últimas 24 horas: "+ str(carga_estados.loc[features['properties']['NOME2']]['Mhw'])+' Mhw'
+        features['properties']['MHW'] = "Aumento percentual: "+ str(dados.loc[features['properties']['NOME2']]['Carga'])+'%'
           
     cloropleth.geojson.add_child(
           folium.features.GeoJsonTooltip(['NOME2','MHW'],labels=False)
         )
-    st.subheader("Região Selecionada")
+    st.subheader("Regiões")
     st_mapa=st_folium(mapa,width=1000 , height=450) 
 
 
