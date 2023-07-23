@@ -229,13 +229,12 @@ def home():
     
     ano_final = st.sidebar.selectbox('Escolha o ano final',(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()['Datetime'][coleta_dados_csv()['Datetime']==ano_inicial].index[0]+1:]))
 
-    st.header("Maiores aumentos no percentual de consumo: ")
 
   
     col1, col2, col3 = st.columns(3)
   
     
-    col1.metric(label = "", value = f"{20}%",
+    col1.metric(label = "Maior aumento parcentual:", value = f"{20}%",
                delta = f"Norte",
                help = f"" )
     col2.metric(label = "" ,value='Centro-sul',
