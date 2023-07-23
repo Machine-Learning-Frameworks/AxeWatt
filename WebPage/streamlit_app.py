@@ -91,7 +91,7 @@ def cria_mapa(regiões):
     dados.set_index('Estados',inplace=True)
     cloropleth.geojson.add_to(mapa)
     for features in cloropleth.geojson.data['features']:
-        features['properties']['MHW'] = "Aumento percentual: "+ str(dados.loc[features['properties']['NOME2']]['Carga'])+'%'
+        features['properties']['MHW'] = "Variação percentual: "+ str(dados.loc[features['properties']['NOME2']]['Carga'])+'%'
           
     cloropleth.geojson.add_child(
           folium.features.GeoJsonTooltip(['NOME2','MHW'],labels=False)
