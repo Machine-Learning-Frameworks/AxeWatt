@@ -226,7 +226,7 @@ def home():
     
     ano_inicial = st.sidebar.selectbox('Escolha o ano inicial',(coleta_dados_csv()['Datetime']))
 
-    ano_final = st.sidebar.selectbox('Escolha o ano final',(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()['Datetime'][coleta_dados_csv()['Datetime']==ano_inicial].index[0]))
+    ano_final = st.sidebar.selectbox('Escolha o ano final',(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()['Datetime'][coleta_dados_csv()['Datetime']==ano_inicial].index[0]+1:]))
   
     col1, col2, col3 = st.columns(3)
     
