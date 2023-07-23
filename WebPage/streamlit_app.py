@@ -72,7 +72,7 @@ def cria_grafico_consumo(dados):
   
 def cria_mapa():
 
-    dados=coleta_dados_csv().to_frame()
+    dados=ordena_regiões(ano_inicial,ano_final).to_frame()
     dados['index']=[0,1,2,3]
     dados.set_index('index',inplace=True)
     st.write(dados)
