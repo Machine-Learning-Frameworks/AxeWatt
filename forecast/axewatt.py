@@ -28,10 +28,10 @@ class Axewatt:
                 data = self.tools.get_data(region)
 
                 timeseries_experiment.setup(data, target="mwh",
-                                            fh=3, fold=5, n_jobs=1,
+                                            fh=3, fold=4, n_jobs=1,
                                             session_id=991, verbose=False)
 
-                model = timeseries_experiment.create_model("ets",
+                model = timeseries_experiment.create_model("exp_smooth",
                                                             verbose=False)
                 
                 tuned_model = timeseries_experiment.tune_model(model, n_iter=10, optimize="R2",

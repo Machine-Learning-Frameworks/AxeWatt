@@ -6,7 +6,7 @@ class AxewattTools:
         self.data["Datetime"] = pd.to_datetime(self.data["Datetime"])
         self.data.set_index("Datetime", inplace=True)
         self.data = self.data.resample('a').sum()
-        self.data = self.data[1:]
+        self.data = self.data[:-1]
 
     
     def get_data(self, region: str) -> pd.DataFrame:
