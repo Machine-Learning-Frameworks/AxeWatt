@@ -12,6 +12,8 @@ import altair as alt
 
 st.set_page_config(page_title='Forecasting',layout='wide')
 
+if 'estado_escolhido' not in st.session_state:
+  st.session_state['estado_escolhido'] = 'Centro-sul'
 
 pagina = st.empty()
 
@@ -78,10 +80,30 @@ def cria_grafico_consumo(dados):
   return grafico_real
 
 
-  
-def cria_mapa(regiões):
+def ordena_regiões(ano_inicial,ano_final):
+  dados = coleta_dados_csv()
+  inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
+  fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
+  percentuais_aumento = [(((dados['Norte'].iloc[fim]-dados['Norte'].iloc[inicio])/dados['Norte'].iloc[inicio])*100).round(),
+                         (((dados['Sul'].iloc[fim]-dados['Sul'].iloc[inicio])/dados['Sul'].iloc[inicio])*100).round(),
+                         (((dados['Nordeste'].iloc[fim]-dados['Nordeste'].iloc[inicio])/dados['Nordeste'].iloc[inicio])*100).round(),
+                         (((dados['Centro-sul'].iloc[fim]-dados['Centro-sul'].iloc[inicio])/dados['Centro-sul'].iloc[inicio])*100).round()
+                        ]
+  return pd.Series(data = percentuais_aumento, index =['Norte','Sul','Nordeste','Centro-sul']).sort_values(ascending=False)
 
-    dados=regiões.to_frame()
+
+
+def home():
+    
+  
+    st.sidebar.image('WebPage/LOGO.png')
+    
+    ano_inicial = st.sidebar.selectbox('Escolha o ano inicial',(coleta_dados_csv()['Datetime']))
+
+    
+    ano_final = st.sidebar.selectbox('Escolha o ano final',(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()['Datetime'][coleta_dados_csv()['Datetime']==ano_inicial].index[0]+1:]))
+
+    dados=ordena_regiões(ano_inicial,ano_final).to_frame
     dados['index'] = [0,1,2,3]
     dados['Estados'] = regiões.index
     dados.set_index('index',inplace=True)
@@ -106,36 +128,12 @@ def cria_mapa(regiões):
           folium.features.GeoJsonTooltip(['NOME2','MHW'],labels=False)
         )
     st.subheader("Regiões")
-    st_mapa=st_folium(mapa,width=1000 , height=450) 
+    st_mapa=st_folium(mapa,width=1000,height=450) 
+    
     if st_mapa['last_active_drawing']:
-      return st_mapa['last_active_drawing']['properties']['NOME2']
+     st.session_state['estado_escolhido'] = st_mapa['last_active_drawing']['properties']['NOME2']
 
-
-
-def ordena_regiões(ano_inicial,ano_final):
-  dados = coleta_dados_csv()
-  inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
-  fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
-  percentuais_aumento = [(((dados['Norte'].iloc[fim]-dados['Norte'].iloc[inicio])/dados['Norte'].iloc[inicio])*100).round(),
-                         (((dados['Sul'].iloc[fim]-dados['Sul'].iloc[inicio])/dados['Sul'].iloc[inicio])*100).round(),
-                         (((dados['Nordeste'].iloc[fim]-dados['Nordeste'].iloc[inicio])/dados['Nordeste'].iloc[inicio])*100).round(),
-                         (((dados['Centro-sul'].iloc[fim]-dados['Centro-sul'].iloc[inicio])/dados['Centro-sul'].iloc[inicio])*100).round()
-                        ]
-  return pd.Series(data = percentuais_aumento, index =['Norte','Sul','Nordeste','Centro-sul']).sort_values(ascending=False)
-
-
-
-def home():
-    
   
-    st.sidebar.image('WebPage/LOGO.png')
-    
-    ano_inicial = st.sidebar.selectbox('Escolha o ano inicial',(coleta_dados_csv()['Datetime']))
-
-    
-    ano_final = st.sidebar.selectbox('Escolha o ano final',(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()['Datetime'][coleta_dados_csv()['Datetime']==ano_inicial].index[0]+1:]))
-
-
   
     col1, col2, col3, col4 = st.columns(4)
   
@@ -153,5 +151,5 @@ def home():
                delta = f"{(regiões.iloc[3])}%",
                help = f"")
     
-    st.altair_chart(cria_grafico_consumo(filtra_dados(cria_mapa(ordena_regiões(ano_inicial,ano_final)),ano_inicial,ano_final)), theme="streamlit", use_container_width=True)
+    st.altair_chart(cria_grafico_consumo(filtra_dados(st.session_state['estado_escolhido'],ano_inicial,ano_final)), theme="streamlit", use_container_width=True)
 home()
