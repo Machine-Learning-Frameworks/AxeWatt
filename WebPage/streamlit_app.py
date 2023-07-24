@@ -149,6 +149,5 @@ def home():
                delta = f"{(regiões.iloc[3])}%",
                help = f"")
     
-    st.altair_chart(cria_grafico_consumo(filtra_dados(cria_mapa(),tempo_inicial,tempo_final), theme="streamlit", use_container_width=True)
-    
+    st.altair_chart(cria_grafico_consumo(filtra_dados(cria_mapa(),tempo_inicial,tempo_final), theme="streamlit", use_container_width=True))
 home()
