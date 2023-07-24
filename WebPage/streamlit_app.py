@@ -32,7 +32,7 @@ def filtra_dados(região,ano_inicial,ano_final):
     inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
     fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
     dados = dados.iloc[inicio:fim]
-    ano = dados['Datetime'].dt.strftime("%Y")
+    ano = pd.to_datetime(dados['Datetime']).dt.strftime("%Y")
     dados = dados[['Datetime',região]]
     dados['Datetime'] = ano
     dados.rename(columns={região:'Mhw','Datetime':'Tempo'},inplace=True)
