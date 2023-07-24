@@ -30,11 +30,13 @@ def coleta_localizacao():
   return localizacao
   
 def filtra_dados(região,ano_inicial,ano_final):
+
+  
     dados=coleta_dados_csv()
     inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
     fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
-    dados = dados.iloc[inicio:fim+1]
-    ano = pd.DatetimeIndex(dados['Datetime'])
+
+    ano = pd.date_range(start=dados.iloc[inicio], end=dados.iloc[fim])
     st.write(dados)
     dados = dados[['Datetime',região]]
     dados['Datetime'] = ano
