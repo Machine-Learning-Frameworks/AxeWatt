@@ -148,14 +148,7 @@ def home():
     col4.metric(label  ="",value = regiões.index[3],
                delta = f"{(regiões.iloc[3])}%",
                help = f"")
-
-    
-    
     
     st.altair_chart(cria_grafico_consumo(filtra_dados(cria_mapa(),tempo_inicial,tempo_final), theme="streamlit", use_container_width=True)
     
-
-
-
-
 home()
