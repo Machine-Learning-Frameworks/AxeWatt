@@ -27,7 +27,12 @@ def coleta_localizacao():
   localizacao = gpd.read_file('WebPage/grandes_regioes_json.geojson')
   return localizacao
   
-
+def filtra_dados(região,tempo_inicial,tempo_final)
+  dados=coleta_dados_csv()
+  inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
+  fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
+  dados = dados.iloc[inicio:fim]
+  return dados[['Datetime',região]]
 
     
 def cria_grafico_consumo(dados):
@@ -98,7 +103,8 @@ def cria_mapa(regiões):
         )
     st.subheader("Regiões")
     st_mapa=st_folium(mapa,width=1000 , height=450) 
-
+    if st_mapa['last_active_drawing']:
+      return st_mapa['last_active_drawing']['properties']['NOME2']
 
 
 
@@ -143,10 +149,10 @@ def home():
                delta = f"{(regiões.iloc[3])}%",
                help = f"")
 
-    cria_mapa(regiões)
     
     
-    #st.altair_chart(cria_grafico_consumo(filtra_dados(opção_regiao,opção_tempo_inicial,opção_tempo_final)), theme="streamlit", use_container_width=True)
+    
+    st.altair_chart(cria_grafico_consumo(filtra_dados(cria_mapa(),tempo_inicial,tempo_final), theme="streamlit", use_container_width=True)
     
 
 
