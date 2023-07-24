@@ -6,16 +6,17 @@ from streamlit_folium import folium_static
 import datetime
 import geopandas as gpd
 import altair as alt
-import streamlit_javascript as st_js
-
 
 
 
 
 st.set_page_config(page_title='Forecasting',layout='wide')
 
-tamanho_da_tela= st_js.st_javascript("window.innerWidth")
+if 'estado_escolhido' not in st.session_state:
+  st.session_state['estado_escolhido'] = 'Centro-sul'
+
 pagina = st.empty()
+
 @st.cache_data
 def coleta_dados_csv():
   dados=pd.read_csv('data/CURVA_CARGA_FORECAST.csv')
@@ -28,50 +29,18 @@ def coleta_localizacao():
   localizacao = gpd.read_file('WebPage/grandes_regioes_json.geojson')
   return localizacao
   
-def filtra_dados(região,tempo_inicial,tempo_final):
-  escala_do_dia = pd.date_range(start=tempo_inicial, end=tempo_final)
-  tempo_inicial=datetime.datetime(tempo_inicial.year,tempo_inicial.month,tempo_inicial.day,0,0,0)
-  tempo_final=datetime.datetime(tempo_final.year,tempo_final.month,tempo_final.day,23,0,0)
-  data_frame=coleta_dados_csv()[[região,'Datetime']]
-  data_frame['Datetime']=pd.to_datetime(data_frame['Datetime'])
+def filtra_dados(região,ano_inicial,ano_final):
+    dados=coleta_dados_csv()
+    inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
+    fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
+    dados = dados.iloc[inicio:fim+1]
+    st.write(dados)
+    ano = pd.to_datetime(dados['Datetime']).dt.strftime("%Y")
+    dados = dados[['Datetime',região]]
+    dados['Datetime'] = ano
+    dados.rename(columns={região:'Mhw','Datetime':'Tempo'},inplace=True)
+    return dados
 
-  if tempo_inicial.year != tempo_final.year:
-    filtrados=data_frame.loc[(data_frame['Datetime']>=tempo_inicial)&(data_frame['Datetime']<=tempo_final)]
-    filtrados['Datetime'] = pd.DatetimeIndex(filtrados['Datetime'])
-    filtrados.set_index('Datetime',inplace=True)
-    filtrados = filtrados.resample('Y').sum()
-    filtrados.reset_index(inplace=True)
-    ano = filtrados['Datetime'].dt.strftime("%Y")
-    filtrados['Datetime']= ano
-    filtrados.rename(columns={região:'Mhw','Datetime':'Tempo'},inplace=True)
-    return filtrados
-    
-  elif tempo_inicial.month != tempo_final.month and len(escala_do_dia) > 90 :
-    filtrados=data_frame.loc[(data_frame['Datetime']>=tempo_inicial)&(data_frame['Datetime']<=tempo_final)]
-    filtrados['Datetime'] = pd.DatetimeIndex(filtrados['Datetime'])
-    filtrados.set_index('Datetime',inplace=True)
-    filtrados = filtrados.resample('M').sum()
-    filtrados.reset_index(inplace=True)
-    mes = filtrados['Datetime'].dt.strftime("%m")
-    filtrados['Datetime']=mes
-    filtrados.rename(columns={região:'Mhw','Datetime':'Tempo'},inplace=True)
-    return filtrados
-    
-  elif tempo_inicial.day != tempo_final.day : 
-    filtrados=data_frame.loc[(data_frame['Datetime']>=tempo_inicial)&(data_frame['Datetime']<=tempo_final)]
-    filtrados['Datetime'] = pd.DatetimeIndex(filtrados['Datetime'])
-    filtrados.set_index('Datetime',inplace=True)
-    filtrados= filtrados.resample('D').sum()
-    filtrados.reset_index(inplace=True)
-    filtrados['Datetime']=filtrados['Datetime'].dt.strftime("%m/%d")
-    filtrados.rename(columns={região:'Mhw','Datetime':'Tempo'},inplace=True)
-    return filtrados
-  
-  else:
-    filtrados=data_frame.loc[(data_frame['Datetime']>=tempo_inicial)&(data_frame['Datetime']<=tempo_final)]
-    filtrados['Datetime']= filtrados['Datetime'].copy().dt.strftime("%H:%M")
-    filtrados.rename(columns={região:'Mhw','Datetime':'Tempo'},inplace=True)
-    return filtrados
     
 def cria_grafico_consumo(dados):
   grafico=alt.Chart(dados).mark_area(color = 'orange',
@@ -112,111 +81,17 @@ def cria_grafico_consumo(dados):
   return grafico_real
 
 
-def filtra_dados_comparação(região):
- dados = coleta_dados_csv()[[região,'Datetime']]
- tempo = pd.DatetimeIndex(dados['Datetime'].iloc[-24:]).strftime("%H:%M")
- dados_grafico = [dados[região].iloc[-24:].values,dados[região].iloc[-48:-24].values]
- dic = {'real':dados_grafico[0],'previsto':dados_grafico[1]}
- return pd.DataFrame(index=tempo, data=dic)
+def ordena_regiões(ano_inicial,ano_final):
+  dados = coleta_dados_csv()
+  inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
+  fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
+  percentuais_aumento = [(((dados['Norte'].iloc[fim]-dados['Norte'].iloc[inicio])/dados['Norte'].iloc[inicio])*100).round(),
+                         (((dados['Sul'].iloc[fim]-dados['Sul'].iloc[inicio])/dados['Sul'].iloc[inicio])*100).round(),
+                         (((dados['Nordeste'].iloc[fim]-dados['Nordeste'].iloc[inicio])/dados['Nordeste'].iloc[inicio])*100).round(),
+                         (((dados['Centro-sul'].iloc[fim]-dados['Centro-sul'].iloc[inicio])/dados['Centro-sul'].iloc[inicio])*100).round()
+                        ]
+  return pd.Series(data = percentuais_aumento, index =['Norte','Sul','Nordeste','Centro-sul']).sort_values(ascending=False)
 
-  
-@st.cache_data(experimental_allow_widgets=True)
-def cria_mapa(cores):
-
-    dados=coleta_dados_csv()
-    carga_estados={'Estados':[],
-               'Mhw':[]}
-    estados=['Nordeste','Norte','Sul','Centro-sul']
-    for i in estados:
-      carga_estados['Estados'].append(i)
-      carga_estados['Mhw'].append(dados[i].iloc[-24::].sum().round())
-
-    carga_estados=pd.DataFrame(carga_estados)
-    mapa = folium.Map(location=[-14.235,-54.2],zoom_start=4,
-                    max_zoom=4,min_zoom=4,tiles='CartoDB positron',dragging=False,prefer_canvas=True)
-  
-    carga_estados['cores']=cores
-          
-    cloropleth = folium.Choropleth(
-        geo_data=coleta_localizacao(),
-        data=carga_estados,
-        columns=['Estados','cores'],
-        key_on='feature.properties.NOME2',
-        fill_color='Spectral'
-        )
-    carga_estados.set_index('Estados',inplace=True)
-    cloropleth.geojson.add_to(mapa)
-    for features in cloropleth.geojson.data['features']:
-        features['properties']['MHW'] = "Consumo nas últimas 24 horas: "+ str(carga_estados.loc[features['properties']['NOME2']]['Mhw'])+' Mhw'
-          
-    cloropleth.geojson.add_child(
-          folium.features.GeoJsonTooltip(['NOME2','MHW'],labels=False)
-        )
-    st.subheader("Região Selecionada")
-    st_mapa=st_folium(mapa,width=1000 , height=450) 
-
-
-
-@st.cache_data
-def coleta_dados_previsao_real():
-  dados_previsao = pd.read_csv('data/CURVA_CARGA_NOVO.csv')
-  dados_previsao.set_index('Datetime',inplace=True)
-  dados_previsao.rename(columns={"MWh_N": "Norte_Previsto", "MWh_NE": "Nordeste_Previsto","MWh_S":"Sul_Previsto","MWh_SE":"Centro-sul_Previsto"},inplace=True)
-
-  dados_real = pd.read_csv('data/CURVA_CARGA_FORECAST.csv').iloc[-24:]
-  dados_real.set_index('Datetime',inplace=True)
-  dados_real.rename(columns={"MWh_N": "Norte_Real", "MWh_NE": "Nordeste_Real","MWh_S":"Sul_Real","MWh_SE":"Centro-sul_Real"},inplace=True)
-  dados_real.drop(columns=['Unnamed: 0'],inplace=True)
-
-  dados = pd.concat([dados_previsao,dados_real],axis=1).reindex(dados_previsao.index)
-  return dados 
-
-
-
-
-
-def cria_gráfico_previsão_real(região):
-  dados = coleta_dados_previsao_real()[[região+'_Previsto',região+'_Real']]
-  
-  pontos = alt.selection_point(nearest=True, on='mouseover',
-                        fields=['x'], empty=False)
-
-
-  line = alt.Chart(source).mark_line(interpolate='basis').encode(
-      x='x:Q',
-      y='y:Q',
-      color='category:N'
-      )
-
-  selectors = alt.Chart(source).mark_point().encode(
-      x='x:Q',
-      opacity=alt.value(0),
-      ).add_params(
-      nearest
-        )
-
-
-  points = line.mark_point().encode(
-    opacity=alt.condition(nearest, alt.value(1), alt.value(0))
-        )
-
-
-  text = line.mark_text(align='left', dx=5, dy=-5).encode(
-    text=alt.condition(nearest, 'y:Q', alt.value(' '))
-    )
-
-
-  rules = alt.Chart(source).mark_rule(color='gray').encode(
-      x='x:Q',
-    ).transform_filter(
-      nearest
-    )
-
-  alt.layer(
-    line, selectors, pontos, rules, text
-    ).properties(
-      width=600, height=300
-    )
 
 
 def home():
@@ -224,49 +99,59 @@ def home():
   
     st.sidebar.image('WebPage/LOGO.png')
     
-    opção_regiao = st.sidebar.selectbox('Escolha uma região',('Norte','Nordeste','Centro-sul','Sul')) 
+    ano_inicial = st.sidebar.selectbox('Escolha o ano inicial',(coleta_dados_csv()['Datetime']))
+
+    
+    ano_final = st.sidebar.selectbox('Escolha o ano final',(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()['Datetime'][coleta_dados_csv()['Datetime']==ano_inicial].index[0]+1:]))
+
+
+    regiões = ordena_regiões(ano_inicial,ano_final)
+
+    col1, col2, col3, col4 = st.columns(4)
+   
+    col1.metric(label = "", value = regiões.index[0] ,
+               delta = f"{(regiões.iloc[0])}%",
+               help = f"" )
+    col2.metric(label = "" ,value = regiões.index[1],
+               delta = f"{(regiões.iloc[1])}%",
+               help = f"")
+    col3.metric(label  ="",value = regiões.index[2],
+               delta = f"{(regiões.iloc[2])}%",
+               help = f"")
+    col4.metric(label  ="",value = regiões.index[3],
+               delta = f"{(regiões.iloc[3])}%",
+               help = f"")
   
-    col1, col2, col3 = st.columns(3)
-    
-    col1.metric(label = "Consumo na próxima hora: ", value = f"{coleta_dados_csv()[opção_regiao].iloc[-1]} MWh",
-               delta = f"{(coleta_dados_csv()[opção_regiao].iloc[-1] - coleta_dados_csv()[opção_regiao].iloc[-2]).round()} MWh",
-               help = f"Valor do consumo de energia previsto para ás {pd.to_datetime(coleta_dados_csv()['Datetime'].iloc[-1]).strftime('%H:%M na data %d/%m/%y')}" )
-    col2.metric(label = "Consumo na última hora: ",value = f"{coleta_dados_csv()[opção_regiao].iloc[-2]} MWh" ,
-               delta = f"{(coleta_dados_csv()[opção_regiao].iloc[-2] - coleta_dados_csv()[opção_regiao].iloc[-3]).round()} MWh",
-               help = f"Valor do consumo de energia ás {pd.to_datetime(coleta_dados_csv()['Datetime'].iloc[-2]).strftime('%H:%M na data %d/%m/%y')}")
-    col3.metric(label  ="Pico de consumo nas últimas 24 horas: ", value=f"{coleta_dados_csv()[opção_regiao].iloc[-24:-1].max()} MWh", 
-               delta = f"{(coleta_dados_csv()[opção_regiao].iloc[-48:-24].max() - coleta_dados_csv()[opção_regiao].iloc[-24:-1].max()).round()} MWh",
-               help = f"Valor do consumo de energia ás {pd.to_datetime(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()[opção_regiao].iloc[-24:-1].idxmax()]).strftime('%H:%M na data %d/%m/%y')}")
-
-
-    if opção_regiao == 'Centro-sul':
-      cria_mapa([None,None,None,200])
-    if opção_regiao == 'Nordeste':
-      cria_mapa([200,None,None,None])
-    if opção_regiao == 'Norte':
-      cria_mapa([None,200,None,None])
-    if opção_regiao == 'Sul':
-      cria_mapa([None,None,200,None])
-    dados_tempo=coleta_dados_csv()
+    dados = ordena_regiões(ano_inicial,ano_final).to_frame()
+    dados['Estados'] = dados.index
+    dados['index'] = [0,1,2,3]
+    dados.set_index('index',inplace=True)
+    dados.rename(columns={0:'Carga'},inplace = True)
+    mapa = folium.Map(location=[-14.235,-54.2],zoom_start=4,
+                    max_zoom=4,min_zoom=4,tiles='CartoDB positron',dragging=False,prefer_canvas=True)
   
-    inicio=pd.to_datetime(dados_tempo['Datetime']).iloc[0]
-    fim=pd.to_datetime(dados_tempo['Datetime']).iloc[-1]
-    opção_tempo_inicial = st.sidebar.date_input('Escolha uma data inicial',fim,min_value=inicio,
-                                              max_value=fim,
-                                              )
+          
+    cloropleth = folium.Choropleth(
+        geo_data=coleta_localizacao(),
+        data=dados,
+        columns=['Estados','Carga'],
+        key_on='feature.properties.NOME2',
+        fill_color='Spectral'
+        )
+    dados.set_index('Estados',inplace=True)
+    cloropleth.geojson.add_to(mapa)
+    for features in cloropleth.geojson.data['features']:
+        features['properties']['MHW'] = "Variação percentual: "+ str(dados.loc[features['properties']['NOME2']]['Carga'])+'%'
+          
+    cloropleth.geojson.add_child(
+          folium.features.GeoJsonTooltip(['NOME2','MHW'],labels=False)
+        )
+    st.subheader("Regiões")
+    st_mapa=st_folium(mapa,width=1000,height=450) 
     
-    
-  
-    opção_tempo_final = st.sidebar.date_input('Escolha uma data final',opção_tempo_inicial,min_value=opção_tempo_inicial,
-                                              max_value=fim,
-                                              )
+    if st_mapa['last_active_drawing']:
+     st.session_state['estado_escolhido'] = st_mapa['last_active_drawing']['properties']['NOME2']
 
     
-    
-    st.altair_chart(cria_grafico_consumo(filtra_dados(opção_regiao,opção_tempo_inicial,opção_tempo_final)), theme="streamlit", use_container_width=True)
-    
-
-
-
-
+    st.altair_chart(cria_grafico_consumo(filtra_dados(st.session_state['estado_escolhido'],ano_inicial,ano_final)), theme="streamlit", use_container_width=True)
 home()
