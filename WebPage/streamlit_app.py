@@ -103,6 +103,24 @@ def home():
     
     ano_final = st.sidebar.selectbox('Escolha o ano final',(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()['Datetime'][coleta_dados_csv()['Datetime']==ano_inicial].index[0]+1:]))
 
+
+    regiões = ordena_regiões(ano_inicial,ano_final)
+
+    col1, col2, col3, col4 = st.columns(4)
+   
+    col1.metric(label = "", value = regiões.index[0] ,
+               delta = f"{(regiões.iloc[0])}%",
+               help = f"" )
+    col2.metric(label = "" ,value = regiões.index[1],
+               delta = f"{(regiões.iloc[1])}%",
+               help = f"")
+    col3.metric(label  ="",value = regiões.index[2],
+               delta = f"{(regiões.iloc[2])}%",
+               help = f"")
+    col4.metric(label  ="",value = regiões.index[3],
+               delta = f"{(regiões.iloc[3])}%",
+               help = f"")
+  
     dados = ordena_regiões(ano_inicial,ano_final).to_frame()
     dados['Estados'] = dados.index
     dados['index'] = [0,1,2,3]
@@ -133,22 +151,6 @@ def home():
     if st_mapa['last_active_drawing']:
      st.session_state['estado_escolhido'] = st_mapa['last_active_drawing']['properties']['NOME2']
 
-  
-  
-    col1, col2, col3, col4 = st.columns(4)
-   
-    col1.metric(label = "", value = regiões.index[0] ,
-               delta = f"{(regiões.iloc[0])}%",
-               help = f"" )
-    col2.metric(label = "" ,value = regiões.index[1],
-               delta = f"{(regiões.iloc[1])}%",
-               help = f"")
-    col3.metric(label  ="",value = regiões.index[2],
-               delta = f"{(regiões.iloc[2])}%",
-               help = f"")
-    col4.metric(label  ="",value = regiões.index[3],
-               delta = f"{(regiões.iloc[3])}%",
-               help = f"")
     
     st.altair_chart(cria_grafico_consumo(filtra_dados(st.session_state['estado_escolhido'],ano_inicial,ano_final)), theme="streamlit", use_container_width=True)
 home()
