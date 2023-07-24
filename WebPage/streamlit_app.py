@@ -104,7 +104,7 @@ def home():
     ano_final = st.sidebar.selectbox('Escolha o ano final',(coleta_dados_csv()['Datetime'].iloc[coleta_dados_csv()['Datetime'][coleta_dados_csv()['Datetime']==ano_inicial].index[0]+1:]))
 
     dados=ordena_regiões(ano_inicial,ano_final).to_frame
-    dados['Estados'] = regiões.index
+    dados['Estados'] = dados.index
     dados.set_index('index',inplace=True)
     dados.rename(columns={0:'Carga'},inplace = True)
     mapa = folium.Map(location=[-14.235,-54.2],zoom_start=4,
