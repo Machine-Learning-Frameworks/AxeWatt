@@ -78,7 +78,7 @@ def cria_grafico_consumo(dados):
     
     
   
-  st.subheader("Gráfico de Demanda")
+
   return grafico_real
 
 
@@ -153,6 +153,6 @@ def home():
     if st_mapa['last_active_drawing']:
      st.session_state['estado_escolhido'] = st_mapa['last_active_drawing']['properties']['NOME2']
 
-    
+    st.subheader("Gráfico de Demanda " + st.session_state['estado_escolhido'])
     st.altair_chart(cria_grafico_consumo(filtra_dados(st.session_state['estado_escolhido'],ano_inicial,ano_final)), theme="streamlit", use_container_width=True)
 home()
