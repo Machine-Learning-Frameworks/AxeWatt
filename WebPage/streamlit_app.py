@@ -35,7 +35,7 @@ def filtra_dados(região,ano_inicial,ano_final):
     dados=coleta_dados_csv()
     inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
     fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
-    ano = pd.date_range(start=datetime.datetime(dados['Datetime'].iloc[inicio],1,1), end=datetime.datetime(dados['Datetime'].iloc[fim],12,31),inclusive="both",freq='Y')
+    ano = pd.date_range(start=datetime.datetime(dados['Datetime'].iloc[inicio],1,1), end=datetime.datetime(dados['Datetime'].iloc[fim],12,31),inclusive="both",freq='Y').dt.strftime("%Y")
     dados = dados.iloc[inicio:fim+1]
     st.write(ano)
     st.write(dados)
