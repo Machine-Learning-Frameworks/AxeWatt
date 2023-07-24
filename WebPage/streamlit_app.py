@@ -36,6 +36,7 @@ def filtra_dados(região,ano_inicial,ano_final):
     inicio = dados['Datetime'][dados['Datetime']==ano_inicial].index[0]
     fim = dados['Datetime'][dados['Datetime']==ano_final].index[0]
     ano = pd.date_range(start=dados['Datetime'].iloc[inicio], end=dados['Datetime'].iloc[fim])
+    dados = dados.iloc[inicio:fim+1]
     st.write(dados)
     dados = dados[['Datetime',região]]
     dados['Datetime'] = ano
